@@ -1,0 +1,45 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: /users/{userId}/vocab
+    // Document ID: Auto-generated
+    // Fields:
+    //   - word: string (required) - The English word.
+    //   - addedAt: timestamp (required) - The timestamp when the word was added.
+    //   - userId: string (required) - The UID of the user.
+    //   - source: string (optional) - The source app.
+    //
+    // ===============================================================
+
+    // Helper Functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isValidVocabWord(data) {
+      return data.word is string && data.word.size() > 0 && data.word.size() < 100 &&
+             data.addedAt is timestamp &&
+             data.userId == request.auth.uid &&
+             (!('source' in data) || (data.source is string && data.source.size() < 50));
+    }
+
+    match /users/{userId}/vocab/{wordId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidVocabWord(request.resource.data);
+      allow update: if false; // Words are usually not updated in this flow
+      allow delete: if isOwner(userId);
+    }
+    
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
+    }
+  }
+}

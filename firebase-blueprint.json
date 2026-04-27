@@ -1,0 +1,35 @@
+{
+  "entities": {
+    "VocabWord": {
+      "title": "VocabWord",
+      "description": "A word added to the vocabulary list for review.",
+      "type": "object",
+      "properties": {
+        "word": {
+          "type": "string",
+          "description": "The English word."
+        },
+        "addedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The timestamp when the word was added."
+        },
+        "userId": {
+          "type": "string",
+          "description": "The UID of the user who added the word."
+        },
+        "source": {
+          "type": "string",
+          "description": "The source app (e.g., WordFinder)."
+        }
+      },
+      "required": ["word", "addedAt", "userId"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}/vocab": {
+      "schema": "VocabWord",
+      "description": "User's personal vocabulary list."
+    }
+  }
+}
